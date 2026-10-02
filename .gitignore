@@ -1,0 +1,34 @@
+# --- ENVIRONMENT VARIABLES ---
+.env
+.env.*
+!.env.example
+
+# --- PYTHON / BACKEND ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+env/
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# --- DOCKER DATA ---
+# Agar local postgres data folder ban jaye toh git track na kare
+postgres_data/
+
+# --- IDE & EDITORS ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- OPERATING SYSTEM FILES ---
+.DS_Store
+Thumbs.db
+ehthumbs.db

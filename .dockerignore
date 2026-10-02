@@ -1,0 +1,27 @@
+# Git files
+.git
+.gitignore
+README.md
+
+# Environment variables & secrets
+.env
+.env.*
+
+# Python / Backend ignores
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+env/
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# OS specific files
+.DS_Store
+Thumbs.db

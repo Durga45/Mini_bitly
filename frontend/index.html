@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini-Bitly | URL Shortener & Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 400px;
+            text-align: center;
+        }
+        h2 { margin-bottom: 20px; color: #38bdf8; }
+        input {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: white;
+            border-radius: 6px;
+            outline: none;
+        }
+        button {
+            background: #38bdf8;
+            color: #0f172a;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover { background: #0ea5e9; }
+        .result {
+            margin-top: 20px;
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 6px;
+            word-break: break-all;
+        }
+        a { color: #38bdf8; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>🔗 Mini-Bitly</h2>
+        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Paste your long URL and get a short tracking link!</p>
+        
+        <input type="text" id="longUrl" placeholder="https://example.com/very-long-url...">
+        <br>
+        <button onclick="shortenUrl()">Shorten URL</button>
+
+        <div class="result" id="resultBox" style="display: none;">
+            <p><strong>Short URL:</strong></p>
+            <a id="shortUrlLink" href="#" target="_blank"></a>
+        </div>
+    </div>
+
+    <script>
+        async function shortenUrl() {
+            const longUrl = document.getElementById('longUrl').value;
+            if (!longUrl) {
+                alert("Bhai pehle koi URL toh daal!");
+                return;
+            }
+
+            try {
+                // Local me FastAPI backend port 8000 par chalega
+                const response = await fetch('http://127.0.0.1:8000/shorten', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ original_url: longUrl })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const resultBox = document.getElementById('resultBox');
+                    const shortUrlLink = document.getElementById('shortUrlLink');
+                    
+                    const shortUrl = `http://127.0.0.1:8000/${data.short_code}`;
+                    shortUrlLink.href = shortUrl;
+                    shortUrlLink.innerText = shortUrl;
+                    resultBox.style.display = 'block';
+                } else {
+                    alert("Kuch gadbad ho gayi bhai!");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Backend se connect nahi ho pa raha hai! Kya FastAPI server chalu hai?");
+            }
+        }
+    </script>
+
+</body>
+</html>

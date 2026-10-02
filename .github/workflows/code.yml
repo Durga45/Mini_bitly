@@ -1,0 +1,14 @@
+name: 1. Code Stage
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Status
+        run: echo "code pushed to the main"
