@@ -11,9 +11,9 @@ jobs:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ fromJSON(secrets.MINI_BILTY_SECRET).POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ fromJSON(secrets.MINI_BILTY_SECRET).POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ fromJSON(secrets.MINI_BILTY_SECRET).POSTGRES_DB }}
         ports:
           - 5432:5432
         options: >-
@@ -39,8 +39,7 @@ jobs:
 
       - name: Run Tests with Pytest
         env:
-          # Test ke liye localhost use hoga
-          DATABASE_URL: postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ secrets.POSTGRES_DB }}
+          DATABASE_URL: postgresql://${{ fromJSON(secrets.MINI_BILTY_SECRET).POSTGRES_USER }}:${{ fromJSON(secrets.MINI_BILTY_SECRET).POSTGRES_PASSWORD }}@localhost:5432/${{ fromJSON(secrets.MINI_BILTY_SECRET).POSTGRES_DB }}
         run: |
           cd backend
           pytest
