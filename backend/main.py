@@ -2,15 +2,17 @@ import os
 import string
 import random
 from fastapi import FastAPI, HTTPException, Depends
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, Response  # <-- Response import kiya
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 
-# Environment se DATABASE_URL uthana (Docker compose / .env se)
-# Agar nahi mila toh local testing ke liye SQLite use karega
+# Prometheus imports
+from prometheus_client import Counter, generate_latest, CONTENT_TYPE_LATEST
+
+# Environment se DATABASE_URL uthana
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./database.db")
 
 if DATABASE_URL.startswith("sqlite"):
@@ -44,6 +46,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ==========================================
+# PROMETHEUS METRICS DEFINITION
+# ==========================================
+URLS_CREATED = Counter(
+    "mini_bitly_urls_created_total", 
+    "Total number of short URLs created"
+)
+
+HTTP_REQUESTS = Counter(
+    "mini_bitly_http_requests_total",
+    "Total HTTP requests received",
+    ["method", "endpoint"]
+)
+
+@app.get("/metrics")
+def metrics():
+    # Prometheus ke liye metrics expose karna
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+# ==========================================
+
 # Database Session Dependency
 def get_db():
     db = SessionLocal()
@@ -61,6 +83,10 @@ def generate_short_code(length=6):
 
 @app.post("/shorten")
 def shorten_url(payload: URLRequest, db: Session = Depends(get_db)):
+    # Metric increment karo jab bhi naya URL bane
+    URLS_CREATED.inc()
+    HTTP_REQUESTS.labels(method="POST", endpoint="/shorten").inc()
+
     # Unique short code generate karna
     short_code = generate_short_code()
     while db.query(URLDB).filter(URLDB.short_code == short_code).first():
@@ -75,6 +101,8 @@ def shorten_url(payload: URLRequest, db: Session = Depends(get_db)):
 
 @app.get("/{short_code}")
 def redirect_url(short_code: str, db: Session = Depends(get_db)):
+    HTTP_REQUESTS.labels(method="GET", endpoint="/{short_code}").inc()
+    
     db_url = db.query(URLDB).filter(URLDB.short_code == short_code).first()
     
     if not db_url:
@@ -88,6 +116,8 @@ def redirect_url(short_code: str, db: Session = Depends(get_db)):
 
 @app.get("/analytics/{short_code}")
 def get_analytics(short_code: str, db: Session = Depends(get_db)):
+    HTTP_REQUESTS.labels(method="GET", endpoint="/analytics/{short_code}").inc()
+    
     db_url = db.query(URLDB).filter(URLDB.short_code == short_code).first()
     
     if not db_url:

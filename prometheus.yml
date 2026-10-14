@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 5s # Har 5 seconds mein metrics collect karega
+
+scrape_configs:
+  - job_name: 'mini-bitly-backend'
+    static_configs:
+      - targets: ['backend:8000'] # Docker network mein hamara backend service ka naam 'backend' hai
